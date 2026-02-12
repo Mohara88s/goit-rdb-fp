@@ -1,0 +1,81 @@
+CREATE SCHEMA IF NOT EXISTS pandemic;
+USE pandemic;
+
+SELECT `infectious_cases`.`Entity`,
+    `infectious_cases`.`Code`,
+    `infectious_cases`.`Year`,
+    `infectious_cases`.`Number_yaws`,
+    `infectious_cases`.`polio_cases`,
+    `infectious_cases`.`cases_guinea_worm`,
+    `infectious_cases`.`Number_rabies`,
+    `infectious_cases`.`Number_malaria`,
+    `infectious_cases`.`Number_hiv`,
+    `infectious_cases`.`Number_tuberculosis`,
+    `infectious_cases`.`Number_smallpox`,
+    `infectious_cases`.`Number_cholera_cases`
+FROM infectious_cases;
+
+
+SELECT COUNT(*) FROM infectious_cases;
+ 
+ 
+SELECT 
+    MAX(LENGTH(Entity)) AS max_entity_length,
+    MAX(LENGTH(Code)) AS max_code_length
+FROM infectious_cases;
+
+DROP TABLE IF EXISTS infectious_cases_normalized;
+DROP TABLE IF EXISTS entities;
+
+CREATE TABLE IF NOT EXISTS entities
+(
+id INT PRIMARY KEY auto_increment,
+entity VARCHAR(32) NOT NULL UNIQUE,
+entity_code VARCHAR(8) UNIQUE
+);
+
+
+INSERT INTO entities (entity, entity_code)
+SELECT DISTINCT Entity, Code FROM infectious_cases;
+
+SELECT * FROM entities;
+
+CREATE TABLE infectious_cases_normalized AS
+SELECT 
+    e.id AS entity_id,
+    ic.Year,
+    ic.Number_yaws,
+    ic.polio_cases,
+    ic.cases_guinea_worm,
+    ic.Number_rabies,
+    ic.Number_malaria,
+    ic.Number_hiv,
+    ic.Number_tuberculosis,
+    ic.Number_smallpox,
+    ic.Number_cholera_cases
+FROM infectious_cases ic
+JOIN entities e ON ic.Entity = e.entity;
+
+ALTER TABLE infectious_cases_normalized
+ADD CONSTRAINT fk_entity
+FOREIGN KEY (entity_id) REFERENCES entities(id);
+
+SELECT * FROM infectious_cases_normalized;
+
+SELECT entity_id, Number_rabies FROM infectious_cases_normalized;
+
+
+SELECT 
+	e.entity,
+    e.entity_code,
+	MIN(ic.Number_rabies) min_rabies,
+    AVG(ic.Number_rabies) avg_rabies,
+    MAX(ic.Number_rabies) max_rabies,
+    SUM(ic.Number_rabies) sum_rabies
+FROM infectious_cases_normalized ic
+JOIN entities e ON ic.entity_id = e.id
+WHERE ic.Number_rabies IS NOT NULL 
+AND ic.Number_rabies <> 0
+GROUP BY e.entity, e.entity_code
+ORDER BY avg_rabies DESC
+LIMIT 10;
