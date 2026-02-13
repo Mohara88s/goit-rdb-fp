@@ -90,3 +90,29 @@ SELECT
     TIMESTAMPDIFF(YEAR, MAKEDATE(ic.Year, 1), CURDATE()) AS data_age
 FROM infectious_cases_normalized ic
 JOIN entities e ON ic.entity_id = e.id;
+
+
+DROP FUNCTION IF EXISTS fn_age_getter;
+DELIMITER //
+CREATE FUNCTION `fn_age_getter` (
+par_year INT
+)
+RETURNS INT
+NO SQL
+NOT DETERMINISTIC
+
+BEGIN
+DECLARE result INT;
+SET result = TIMESTAMPDIFF(YEAR, MAKEDATE(par_year, 1), CURDATE());
+RETURN result;
+END
+//
+DELIMITER ;
+
+
+SELECT 
+	e.entity,
+    ic.Year,
+    fn_age_getter(ic.Year) AS data_age
+FROM infectious_cases_normalized ic
+JOIN entities e ON ic.entity_id = e.id;
