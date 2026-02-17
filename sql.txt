@@ -30,13 +30,13 @@ DROP TABLE IF EXISTS entities;
 CREATE TABLE IF NOT EXISTS entities
 (
 id INT PRIMARY KEY auto_increment,
-entity VARCHAR(32) NOT NULL UNIQUE,
-entity_code VARCHAR(8) UNIQUE
+entity VARCHAR(34) NOT NULL UNIQUE,
+entity_code VARCHAR(8)
 );
 
 
 INSERT INTO entities (entity, entity_code)
-SELECT DISTINCT Entity, Code FROM infectious_cases;
+SELECT DISTINCT ic.Entity, ic.Code FROM infectious_cases ic;
 
 SELECT * FROM entities;
 
